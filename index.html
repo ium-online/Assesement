@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IUM Online Examination Portal</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800;900&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+:root{--primary:#C41E3A;--primary-dark:#8B1A2B;--primary-light:#E8374F;--gold:#C9A84C;--gold-light:#F0DEB4;--bg:#F9F7F4;--card:#FFFFFF;--text:#1C1917;--muted:#78716C;--border:#E7E5E0;--success:#16A34A;--danger:#DC2626;--warning:#F59E0B}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Source Sans 3',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+h1,h2,h3,h4{font-family:'Playfair Display',serif}
+.section-hidden{display:none!important}
+.bg-pattern{background-image:radial-gradient(circle at 1px 1px,rgba(196,30,58,0.04) 1px,transparent 0);background-size:28px 28px}
+.header-gradient{background:linear-gradient(135deg,var(--primary-dark) 0%,var(--primary) 50%,var(--primary-light) 100%)}
+.card-shadow{box-shadow:0 4px 24px rgba(0,0,0,0.06),0 1px 4px rgba(0,0,0,0.04)}
+.card-shadow-lg{box-shadow:0 12px 48px rgba(0,0,0,0.1),0 2px 8px rgba(0,0,0,0.06)}
+.input-field{width:100%;padding:12px 16px;border:1.5px solid var(--border);border-radius:10px;font-size:15px;font-family:'Source Sans 3',sans-serif;transition:all .25s;background:#fff;outline:none}
+.input-field:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(196,30,58,0.1)}
+.input-field::placeholder{color:#B8B2A8}
+.input-label{display:block;font-weight:600;font-size:13.5px;color:var(--text);margin-bottom:6px;letter-spacing:0.02em}
+.btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;border:none;padding:14px 36px;border-radius:10px;font-size:16px;font-weight:600;cursor:pointer;transition:all .3s;font-family:'Source Sans 3',sans-serif;letter-spacing:0.02em}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(196,30,58,0.35)}
+.btn-primary:active{transform:translateY(0)}
+.btn-secondary{background:transparent;color:var(--primary);border:2px solid var(--primary);padding:12px 32px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;transition:all .3s;font-family:'Source Sans 3',sans-serif}
+.btn-secondary:hover{background:var(--primary);color:#fff}
+.option-btn{display:flex;align-items:flex-start;gap:14px;padding:16px 20px;border:2px solid var(--border);border-radius:12px;background:#fff;cursor:pointer;transition:all .25s;text-align:left;width:100%;font-size:15px;line-height:1.5}
+.option-btn:hover{border-color:var(--primary);background:rgba(196,30,58,0.02)}
+.option-btn.selected{border-color:var(--primary);background:rgba(196,30,58,0.05)}
+.option-btn.correct{border-color:var(--success);background:rgba(22,163,74,0.08)}
+.option-btn.wrong{border-color:var(--danger);background:rgba(220,38,38,0.08)}
+.option-letter{min-width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;background:var(--bg);color:var(--muted);flex-shrink:0;transition:all .25s}
+.option-btn.selected .option-letter{background:var(--primary);color:#fff}
+.option-btn.correct .option-letter{background:var(--success);color:#fff}
+.option-btn.wrong .option-letter{background:var(--danger);color:#fff}
+.q-nav-btn{width:38px;height:38px;border-radius:8px;border:1.5px solid var(--border);background:#fff;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;color:var(--muted);font-family:'Source Sans 3',sans-serif}
+.q-nav-btn.answered{background:var(--primary);color:#fff;border-color:var(--primary)}
+.q-nav-btn.current{border-color:var(--primary);color:var(--primary);box-shadow:0 0 0 2px rgba(196,30,58,0.2)}
+.timer-danger{color:var(--danger)!important;animation:pulse-danger 1s infinite}
+@keyframes pulse-danger{0%,100%{opacity:1}50%{opacity:.6}}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+@keyframes scaleIn{from{opacity:0;transform:scale(0.8)}to{opacity:1;transform:scale(1)}}
+@keyframes slideDown{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes confettiFall{0%{transform:translateY(-100vh) rotate(0deg);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
+.animate-fade-in-up{animation:fadeInUp .5s ease forwards}
+.animate-scale-in{animation:scaleIn .4s ease forwards}
+.score-circle{width:180px;height:180px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative}
+.score-circle::before{content:'';position:absolute;inset:0;border-radius:50%;border:6px solid var(--border)}
+.score-circle.pass::before{border-color:var(--success);border-top-color:transparent;border-right-color:transparent;transform:rotate(-45deg)}
+.score-circle.fail::before{border-color:var(--danger);border-bottom-color:transparent;border-left-color:transparent;transform:rotate(-45deg)}
+.progress-bar{height:4px;background:var(--border);border-radius:4px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--gold));border-radius:4px;transition:width .4s ease}
+.confetti-piece{position:fixed;width:10px;height:10px;top:-10px;z-index:9999;animation:confettiFall linear forwards;pointer-events:none}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px}
+.toast{position:fixed;top:24px;right:24px;z-index:2000;padding:14px 24px;border-radius:10px;color:#fff;font-weight:500;font-size:14px;animation:slideDown .3s ease forwards;box-shadow:0 8px 24px rgba(0,0,0,0.15);max-width:90vw}
+.toast-success{background:var(--success)}.toast-error{background:var(--danger)}.toast-info{background:var(--primary)}
+@media(max-width:768px){.q-nav-grid{grid-template-columns:repeat(8,1fr)!important}.exam-layout{flex-direction:column!important}}
+@media(prefers-reduced-motion:reduce){*{animation-duration:0.01ms!important;transition-duration:0.01ms!important}}
+select.input-field{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2378716C' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
+select.input-field option{padding:8px}
+</style>
+</head>
+<body class="bg-pattern">
+
+<header class="header-gradient text-white sticky top-0 z-50">
+<div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<img src="https://z-cdn-media.chatglm.cn/files/9ad04891-3146-43f9-aa61-ed98b2aedfe2.png?auth_key=1877788226-7b0a1f8380514007a0b909037810dceb-0-f17fa0c15384a375a052edb4a1075294" alt="IUM Logo" class="h-12 w-auto" onerror="this.style.display='none'">
+<div>
+<h1 class="text-lg md:text-xl font-bold tracking-wide" style="font-family:'Playfair Display',serif">International University of Monaco</h1>
+<p class="text-xs opacity-80 tracking-widest uppercase">Online Examination Portal</p>
+</div>
+</div>
+<div class="hidden md:flex items-center gap-2 text-sm opacity-80"><i class="fas fa-shield-halved"></i><span>Secure Assessment System</span></div>
+</div>
+</header>
+
+<main class="max-w-6xl mx-auto px-4 py-8">
+
+<!-- REGISTRATION -->
+<section id="sec-register" class="animate-fade-in-up">
+<div class="text-center mb-8">
+<h2 class="text-3xl md:text-4xl font-bold mb-3" style="color:var(--primary-dark)">Student Examination Registration</h2>
+<p class="text-base" style="color:var(--muted)">Complete the form below to access your examination. All fields are required.</p>
+</div>
+<div class="max-w-3xl mx-auto bg-white rounded-2xl card-shadow-lg p-6 md:p-10">
+<form id="regForm" onsubmit="return false">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+<div class="md:col-span-2"><div class="p-4 rounded-xl" style="background:rgba(196,30,58,0.04);border:1px solid rgba(196,30,58,0.1)"><p class="text-sm font-medium" style="color:var(--primary-dark)"><i class="fas fa-info-circle mr-2"></i>Ensure all identification details match your official documents. Results will be sent to your email upon completion.</p></div></div>
+<div><label class="input-label">IUM ID <span style="color:var(--danger)">*</span></label><input type="text" id="f-iumid" class="input-field" placeholder="e.g. IUM-2024-001" required></div>
+<div><label class="input-label">UNHCR ID <span style="color:var(--danger)">*</span></label><input type="text" id="f-unhcr" class="input-field" placeholder="e.g. UNHCR-12345" required></div>
+<div><label class="input-label">KENYA ID <span style="color:var(--danger)">*</span></label><input type="text" id="f-kenya" class="input-field" placeholder="e.g. 12345678" required></div>
+<div><label class="input-label">FULL NAME <span style="color:var(--danger)">*</span></label><input type="text" id="f-name" class="input-field" placeholder="Enter your full legal name" required></div>
+<div><label class="input-label">EMAIL ADDRESS <span style="color:var(--danger)">*</span></label><input type="email" id="f-email" class="input-field" placeholder="your.email@example.com" required></div>
+<div><label class="input-label">SEX <span style="color:var(--danger)">*</span></label><select id="f-sex" class="input-field" required><option value="">-- Select --</option><option value="M">Male (M)</option><option value="F">Female (F)</option></select></div>
+<div><label class="input-label">AGE <span style="color:var(--danger)">*</span></label><input type="number" id="f-age" class="input-field" placeholder="Age" min="16" max="80" required></div>
+<div><label class="input-label">EXAM PROGRAMME <span style="color:var(--danger)">*</span></label><select id="f-program" class="input-field" required>
+<option value="">-- Select Programme --</option>
+<optgroup label="Community Development">
+<option value="Community Development & Social Work">Community Development & Social Work</option>
+<option value="Community Development">Community Development (Diploma)</option>
+</optgroup>
+<optgroup label="Business">
+<option value="Business Management & Administration">Business Management & Administration</option>
+</optgroup>
+<optgroup label="Public Health Assessment">
+<option value="Public Health Assessment Term 1">Public Health Assessment — Term 1</option>
+<option value="Public Health Assessment Term 2">Public Health Assessment — Term 2</option>
+<option value="Public Health Assessment Final">Public Health Assessment — Final Exam</option>
+</optgroup>
+<optgroup label="Community Health Care Nursing">
+<option value="Community Health Care Nursing Term 2">Community Health Care Nursing — Term 2</option>
+<option value="Community Health Care Nursing Final">Community Health Care Nursing — Final Exam (Bachelor's)</option>
+</optgroup>
+</select></div>
+<div><label class="input-label">LEVEL <span style="color:var(--danger)">*</span></label><select id="f-level" class="input-field" required><option value="">-- Select Level --</option><option value="Diploma">Diploma</option><option value="Degree">Degree</option></select></div>
+</div>
+<div class="mt-8 text-center"><button type="button" onclick="handleRegistration()" class="btn-primary text-lg px-12"><i class="fas fa-arrow-right-to-bracket mr-2"></i>Proceed to Examination</button></div>
+</form>
+</div>
+</section>
+
+<!-- INSTRUCTIONS -->
+<section id="sec-instructions" class="section-hidden animate-fade-in-up">
+<div class="max-w-3xl mx-auto">
+<div class="bg-white rounded-2xl card-shadow-lg overflow-hidden">
+<div class="header-gradient text-white p-6 text-center"><h2 class="text-2xl font-bold">Examination Instructions</h2><p class="text-sm opacity-80 mt-1" id="instr-program-label"></p></div>
+<div class="p-6 md:p-10">
+<div class="space-y-4 mb-8">
+<div class="flex items-start gap-3 p-4 rounded-xl" style="background:var(--bg)"><div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style="background:var(--primary);color:#fff"><i class="fas fa-clock"></i></div><div><p class="font-semibold">Time Limit: 60 Minutes</p><p class="text-sm" style="color:var(--muted)">Auto-submit when time expires.</p></div></div>
+<div class="flex items-start gap-3 p-4 rounded-xl" style="background:var(--bg)"><div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style="background:var(--gold);color:#fff"><i class="fas fa-list-ol"></i></div><div><p class="font-semibold">50 Multiple Choice Questions</p><p class="text-sm" style="color:var(--muted)">Each question has 4 options. Select one answer.</p></div></div>
+<div class="flex items-start gap-3 p-4 rounded-xl" style="background:var(--bg)"><div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style="background:var(--success);color:#fff"><i class="fas fa-check-double"></i></div><div><p class="font-semibold">Scoring: 2 marks per correct answer</p><p class="text-sm" style="color:var(--muted)">Pass mark: 50% (50/100). No negative marking.</p></div></div>
+<div class="flex items-start gap-3 p-4 rounded-xl" style="background:var(--bg)"><div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style="background:#6366F1;color:#fff"><i class="fas fa-envelope"></i></div><div><p class="font-semibold">Instant Results via Email</p><p class="text-sm" style="color:var(--muted)">Score sent to your email immediately after submission.</p></div></div>
+</div>
+<div class="p-4 rounded-xl border-2 mb-6" style="border-color:var(--warning);background:rgba(245,158,11,0.05)"><p class="font-semibold text-sm" style="color:var(--warning)"><i class="fas fa-shield-halved mr-2"></i>Academic Integrity Notice</p><p class="text-sm mt-1" style="color:var(--muted)">Any form of malpractice will result in disqualification.</p></div>
+<div class="flex items-center gap-3 mb-6"><input type="checkbox" id="agree-check" class="w-5 h-5 accent-red-700 cursor-pointer"><label for="agree-check" class="text-sm cursor-pointer">I have read and understood the instructions and agree to the academic integrity policy.</label></div>
+<div class="flex gap-4 justify-center"><button onclick="showSection('sec-register')" class="btn-secondary"><i class="fas fa-arrow-left mr-2"></i>Back</button><button onclick="startExam()" id="btn-start" class="btn-primary opacity-50 cursor-not-allowed" disabled><i class="fas fa-play mr-2"></i>Start Examination</button></div>
+</div></div></div>
+</section>
+
+<!-- EXAM -->
+<section id="sec-exam" class="section-hidden">
+<div class="exam-layout flex gap-6" style="flex-direction:row">
+<div class="w-full md:w-64 flex-shrink-0"><div class="bg-white rounded-2xl card-shadow p-4 sticky top-24"><div class="flex items-center justify-between mb-3"><span class="font-bold text-sm" style="color:var(--primary)"><i class="fas fa-grip mr-1"></i> Questions</span><span class="text-xs px-2 py-1 rounded-full font-semibold" style="background:var(--bg);color:var(--muted)" id="answered-count">0/50</span></div><div class="q-nav-grid grid grid-cols-5 md:grid-cols-5 gap-2 mb-4" id="q-nav-grid"></div><div class="space-y-2 text-xs" style="color:var(--muted)"><div class="flex items-center gap-2"><span class="w-4 h-4 rounded" style="background:var(--primary)"></span>Answered</div><div class="flex items-center gap-2"><span class="w-4 h-4 rounded border-2" style="border-color:var(--primary)"></span>Current</div><div class="flex items-center gap-2"><span class="w-4 h-4 rounded" style="background:var(--border)"></span>Unanswered</div></div><div class="mt-4 pt-4" style="border-top:1px solid var(--border)"><button onclick="submitExam()" class="w-full py-3 rounded-xl font-semibold text-white text-sm" style="background:var(--danger)"><i class="fas fa-paper-plane mr-2"></i>Submit Exam</button></div></div></div>
+<div class="flex-1 min-w-0"><div class="bg-white rounded-2xl card-shadow-lg overflow-hidden">
+<div class="p-4 flex items-center justify-between flex-wrap gap-3" style="border-bottom:1px solid var(--border);background:var(--bg)"><div class="flex items-center gap-3"><div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-white card-shadow"><i class="fas fa-clock" style="color:var(--primary)"></i><span class="font-bold text-lg tabular-nums" id="timer-display">60:00</span></div><div class="hidden sm:block"><p class="text-xs font-semibold" style="color:var(--muted)" id="exam-prog-label"></p><p class="text-xs" style="color:var(--muted)" id="exam-level-label"></p></div></div><div class="flex items-center gap-3"><div class="progress-bar w-32"><div class="progress-fill" id="exam-progress" style="width:0%"></div></div><span class="text-xs font-semibold" style="color:var(--muted)" id="q-counter">1/50</span></div></div>
+<div class="p-6 md:p-8" id="question-area"></div>
+<div class="p-4 flex items-center justify-between" style="border-top:1px solid var(--border)"><button onclick="prevQuestion()" id="btn-prev" class="btn-secondary text-sm py-2 px-6" disabled><i class="fas fa-chevron-left mr-1"></i>Previous</button><button onclick="nextQuestion()" id="btn-next" class="btn-primary text-sm py-2 px-6">Next<i class="fas fa-chevron-right ml-1"></i></button></div>
+</div></div>
+</div>
+</section>
+
+<!-- RESULTS -->
+<section id="sec-results" class="section-hidden animate-fade-in-up"><div class="max-w-3xl mx-auto" id="results-container"></div></section>
+
+</main>
+
+<footer class="text-center py-6 text-xs" style="color:var(--muted);border-top:1px solid var(--border)">
+<p>International University of Monaco &mdash; Online Examination Portal</p>
+<p class="mt-1">Support: <a href="mailto:bachelorsdegreeofmonaco@gmail.com" class="underline" style="color:var(--primary)">bachelorsdegreeofmonaco@gmail.com</a> | <a href="mailto:info.admission@ium-course.online" class="underline" style="color:var(--primary)">info.admission@ium-course.online</a></p>
+</footer>
+
+<div id="confirm-modal" class="modal-overlay section-hidden"><div class="bg-white rounded-2xl card-shadow-lg p-6 md:p-8 max-w-md w-full animate-scale-in"><div class="text-center"><div class="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style="background:rgba(220,38,38,0.1)"><i class="fas fa-exclamation-circle text-2xl" style="color:var(--danger)"></i></div><h3 class="text-xl font-bold mb-2">Submit Examination?</h3><p class="text-sm mb-2" style="color:var(--muted)" id="confirm-msg"></p><p class="text-sm font-semibold mb-6" style="color:var(--warning)" id="confirm-warn"></p><div class="flex gap-3 justify-center"><button onclick="closeModal()" class="btn-secondary text-sm py-2 px-6">Cancel</button><button onclick="confirmSubmit()" class="btn-primary text-sm py-2 px-6" style="background:var(--danger)">Yes, Submit</button></div></div></div></div>
+
+<div id="toast-container"></div>
+
+<script>
+var CONFIG={totalTime:3600,passPercent:50,marksPerQ:2,scriptURL:'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE'};
+
+var QBANKS={
+
+/* ===== 1. CD & SOCIAL WORK ===== */
+"Community Development & Social Work":[
+["What is the primary goal of community development?",["Profit maximization","Empowering communities to improve their quality of life","Government control","Individual wealth creation"],1],
+["Who coined community development as a formal approach?",["Karl Marx","Robert Putnam","Colonial Office of Britain (1948)","John Dewey"],2],
+["Which model emphasizes bottom-up approaches?",["Top-down model","Participatory model","Technocratic model","Authoritarian model"],1],
+["ABCD approach was developed by:",["John McKnight and Jody Kretzmann","Paulo Freire","Amartya Sen","Robert Chambers"],0],
+["What does social capital refer to?",["Financial resources","Networks, norms, and trust enabling collective action","Physical infrastructure","Government funding"],1],
+["Paulo Freire's Pedagogy of the Oppressed emphasizes:",["Banking education","Critical consciousness (conscientization)","Rote learning","Standardized testing"],1],
+["Which is NOT a principle of social work?",["Acceptance","Confidentiality","Exploitation","Self-determination"],2],
+["The Strengths Perspective focuses on:",["Identifying deficits","Client abilities, resources, and potential","Medical model","Punitive approaches"],1],
+["What is needs assessment?",["Identifying gaps between current and desired conditions","A budgeting exercise","A government mandate","A marketing strategy"],0],
+["PRA was pioneered by:",["Robert Chambers","Amartya Sen","Mahatma Gandhi","Nelson Mandela"],0],
+["Saul Alinsky developed:",["Consensus organizing","Confrontational organizing","Collaborative organizing","Virtual organizing"],1],
+["The Capability Approach was introduced by:",["John Rawls","Amartya Sen","Peter Singer","Thomas Pogge"],1],
+["Community mobilization means:",["Forcing participation","Engaging members for collective action","Providing loans","Conducting surveys"],1],
+["Social work legislation in Kenya:",["Constitution of Kenya 2010","The Children Act","The Social Workers Act","The Penal Code"],2],
+["NGO stands for:",["National Government Organization","Non-Governmental Organization","New Growth Opportunity","Non-Graduate Occupation"],1],
+["Civil society refers to:",["Military organizations","Organizations outside government and business serving public interests","Government agencies","Corporate entities"],1],
+["Micro-level social work intervention:",["Policy advocacy","Individual counseling","Community organizing","Legislative reform"],1],
+["Empowerment means:",["Giving power to external agencies","Enhancing capacity to control one's life","Imposing solutions","Creating dependency"],1],
+["Sustainable development means:",["Meeting present needs without compromising future generations","Rapid industrial growth","Short-term economic gains","Resource depletion"],0],
+["The Brundtland Report defined:",["Human rights","Sustainable development","Millennium goals","Climate change"],1],
+["UN agency for community development:",["WHO","UNDP","NATO","WTO"],1],
+["Social exclusion refers to:",["Voluntary isolation","Systemic processes marginalizing groups","Physical distance","Cultural preferences"],1],
+["M&E means:",["Surveillance","Systematic tracking of progress and impact","Financial auditing only","Staff review"],1],
+["LogFrame is used for:",["Project design and management","Accounting","Legal documentation","Marketing"],0],
+["Gender mainstreaming means:",["Focusing only on women","Integrating gender perspectives into all policies","Separating genders","Ignoring gender"],1],
+["Capacity building means:",["Constructing facilities","Strengthening skills and resources","Increasing population","Building roads"],1],
+["Stakeholder analysis identifies:",["Only government","All parties affected by or interested in a project","Only donors","Only leaders"],1],
+["Participatory action research:",["Research by academics only","Research with community members as co-researchers","Lab experiments","Statistics only"],1],
+["Ecological systems theory by:",["Freud","Urie Bronfenbrenner","B.F. Skinner","Carl Rogers"],1],
+["Social justice means:",["Favoring the wealthy","Promoting fairness and equity","Maintaining status quo","Supporting discrimination"],1],
+["CBR is:",["Prison reform","Rehabilitation and social integration of persons with disabilities","Urban renewal","Industrial training"],1],
+["Person-in-environment examines:",["Only individual traits","Interaction between individuals and environment","Only environment","Genetics only"],1],
+["Advocacy involves:",["Arguing in court only","Acting on behalf of clients to secure rights","Political campaigning","Marketing services"],1],
+["Community needs survey is:",["A marketing tool","Systematic data collection about community needs","Tax assessment","Voter registration"],1],
+["Referral system is:",["Punishment mechanism","Directing clients to appropriate services","Billing system","Admin procedure only"],1],
+["Cultural competence requires:",["Ignoring differences","Understanding and respecting diverse backgrounds","Imposing one's culture","Assimilation"],1],
+["Community resilience is:",["Resisting all change","Capacity to adapt and recover from adversity","Physical strength","Economic wealth"],1],
+["Sustainable livelihoods framework analyzes:",["Only income","How people construct livelihoods using available assets","Only agriculture","Only urban employment"],1],
+["Conflict resolution involves:",["Suppressing disagreements","Addressing disputes constructively","Legal action only","Avoiding conflict"],1],
+["Social entrepreneurship is:",["Profit-making business","Using business principles to solve social problems","Government welfare","Charity only"],1],
+["Code of ethics serves to:",["Protect from lawsuits","Guide professional conduct and protect clients","Increase salaries","Limit growth"],1],
+["Baseline data is:",["Final results","Info collected before intervention for comparison","Budget allocations","Staff qualifications"],1],
+["Decentralization means:",["Centralizing power","Transferring authority to lower levels","Privatization","Eliminating government"],1],
+["Human rights-based approach emphasizes:",["Economic growth first","Fulfillment of human rights as foundation","Military security","Cultural uniformity"],1],
+["Group work method is for:",["Individual therapy only","Facilitating growth through group processes","Admin tasks","Fundraising only"],1],
+["Community entry strategies involve:",["Forcing entry","Building trust and relationships","Government mandates","Media campaigns only"],1],
+["Social protection is:",["Military defense","Policies reducing poverty and vulnerability","Environmental conservation","Corporate security"],1],
+["Theory of change describes:",["Financial projections","Pathway from activities to desired outcomes","Org structure","Staff plans"],1],
+["Primary role of CD worker:",["Dictate solutions","Facilitate communities solving own problems","Replace leaders","Distribute cash"],1],
+["Community development cycle theory explains:",["Freud's psychoanalysis","How communities go through development stages","Quantum theory","Theory of relativity"],1]
+],
+
+/* ===== 2. COMMUNITY DEVELOPMENT DIPLOMA ===== */
+"Community Development":[
+["CD primarily focuses on:",["Individual wealth","Improving community well-being collectively","Government control","Corporate profits"],1],
+["A community is best defined as:",["People in same building","A group sharing common interests, location, or identity","A political party","Religious organization only"],1],
+["Good community leader characteristic:",["Authoritarian behavior","Listening skills and inclusiveness","Self-interest","Exclusivity"],1],
+["Participation means:",["Being present only","Active involvement in decision-making","Paying fees","Receiving donations"],1],
+["Community profile is:",["Social media page","Comprehensive description of community characteristics and needs","A photograph","Membership list"],1],
+["First step in CD:",["Implementation","Community entry and needs assessment","Evaluation","Funding"],1],
+["Focus group discussion:",["Discipline members","Gather in-depth qualitative data","Distribute food","Conduct elections"],1],
+["Resource mobilization means:",["Depleting resources","Identifying and gathering resources for implementation","Hoarding materials","Importing goods"],1],
+["Community resource example:",["Only money","Local skills, knowledge, networks, and physical assets","Only government grants","Only foreign aid"],1],
+["Project cycle:",["Bicycle race","Sequential phases from identification to evaluation","Annual calendar","Weather patterns"],1],
+["Community mapping:",["Drawing road maps","Visual representations of community resources and features","GPS navigation","Census enumeration"],1],
+["A facilitator:",["Gives orders","Guides discussions without imposing decisions","Takes notes only","Represents government"],1],
+["Sensitization means:",["Making people emotional","Raising awareness and encouraging action","Medical treatment","Conducting inspections"],1],
+["Most important communication skill:",["Shouting","Active listening","Writing reports","Using jargon"],1],
+["Needs assessment helps:",["Increase taxes","Identify what community requires to improve","Count population","Measure land area"],1],
+["Vulnerable groups:",["Wealthy individuals","Children, elderly, persons with disabilities, marginalized groups","Government officials","Business owners"],1],
+["Teamwork is:",["Competition","Collaborative effort toward common goals","Individual assignments","Hierarchical command"],1],
+["Networking:",["Internet browsing","Building connections for mutual benefit","Social media posting","Cable installation"],1],
+["Community action plan:",["Only complaints","Goals, activities, responsibilities, timelines, resources","Only budgets","Only leader names"],1],
+["Advocacy means:",["Avoiding issues","Speaking up to support a cause","Legal prosecution","Advertising products"],1],
+["Monitoring:",["Watching secretly","Regularly tracking progress against plans","Final evaluation","Budget review only"],1],
+["Evaluation assesses:",["Only spending","Relevance, effectiveness, efficiency, and impact","Staff attendance","Office cleanliness"],1],
+["Gender equality:",["Women superior","Equal rights and opportunities for all genders","Ignoring gender","Same roles for everyone"],1],
+["Child rights protected under:",["Business laws","UN Convention on the Rights of the Child","Property laws","Tax laws"],1],
+["Income generation:",["Printing money","Activities helping members earn livelihoods","Tax collection","Bank operations"],1],
+["Self-help group:",["Refuses help","Small group saving money and supporting members economically","Government department","Charity organization"],1],
+["Sustainability means:",["Short-term benefits","Benefits continue after project ends","High spending","Expensive technology"],1],
+["Trust role:",["No role","Essential for participation and collaboration","Causes conflict","Replaces planning"],1],
+["Social inclusion:",["Social media for all","All members participate regardless of differences","Excluding groups","Mandatory attendance"],1],
+["Stakeholder:",["Only project manager","Anyone affected by or interested in a project","Only donor","Only government"],1],
+["Conflict sensitivity:",["Avoiding all conflict","Understanding dynamics to avoid causing harm","Taking sides","Suppressing disagreements"],1],
+["Report writing:",["News articles","Documenting activities, findings, recommendations","Creative writing","Letter writing"],1],
+["Volunteerism:",["Wasting time","Providing unpaid labor and skills for community benefit","Replacing paid workers","Creating competition"],1],
+["Capacity building:",["Building structures only","Training and empowering with skills and knowledge","Providing loans","Distributing food"],1],
+["CBO:",["Government agency","Organization formed by community members for local issues","International NGO","Corporate entity"],1],
+["Problem tree analysis:",["Plant trees","Identify root causes and effects of a problem","Agriculture","Measure deforestation"],1],
+["Priority setting:",["Easiest option","Ranking needs to address most urgent first","Ignoring minor issues","Donor preferences only"],1],
+["Transparency:",["Glass buildings","Being open about decisions, finances, processes","Broadcasting on TV","Publishing novels"],1],
+["Community dialogue:",["Monologues by leaders","Open discussion to share views and reach understanding","Formal debates","Radio programs only"],1],
+["Baseline survey:",["After completion","Before implementation to establish reference data","During mid-term","Annually regardless"],1],
+["Participatory monitoring:",["External evaluators only","Community members tracking own progress","Computerized systems only","Government audits"],1],
+["Mainstreaming:",["Following mainstream media","Integrating cross-cutting issues into all activities","Ignoring special needs","Standardizing everything"],1],
+["Success story:",["Fictional accounts","Real examples of positive change from interventions","Financial statements","Staff profiles"],1],
+["Community ownership:",["Legal property","Members feel belonging and take responsibility","Government control","Donor ownership"],1],
+["BCC aims to:",["Control actions","Positively influence knowledge, attitudes, practices","Advertise products","Conduct surveys"],1],
+["DRR:",["Eliminating all disasters","Actions to reduce vulnerability and build resilience","Insurance policies","Emergency response only"],1],
+["Local resource mobilization:",["Importing materials","Using resources available within community","Foreign aid","Government grants only"],1],
+["Community training purpose:",["Waste time","Enhance skills for effective participation","Certificates only","Trainer income"],1],
+["Accountability:",["Blaming others","Being responsible and answerable for actions","Keeping records","Following orders"],1],
+["Most important CD principle:",["External control","People's participation and empowerment","Maximum spending","Rapid results"],1]
+],
+
+/* ===== 3. BUSINESS MANAGEMENT ===== */
+"Business Management & Administration":[
+["Management is:",["Owning a business","Planning, organizing, leading, and controlling to achieve goals","Working as employee","Investing in stocks"],1],
+["Four functions of management:",["Marketing, finance, HR, production","Planning, organizing, leading, controlling","Buying, selling, trading, bartering","Reading, writing, arithmetic, science"],1],
+["Strategic planning:",["Daily tasks","Long-term goal setting and direction","Short-term scheduling","Budget cutting"],1],
+["Father of Scientific Management:",["Marketing","Frederick Taylor","Human Relations","Quality Control"],1],
+["Maslow's Hierarchy:",["All needs equal","People motivated by unmet needs in a hierarchy","Money is only motivator","Needs don't matter"],1],
+["SWOT Analysis:",["Sales, wages, output, taxes","Strengths, weaknesses, opportunities, threats","Systems, workflows, operations, teams","Software, hardware, operations, training"],1],
+["Delegation:",["Abdicating responsibility","Assigning tasks while retaining accountability","Passing blame","Eliminating workload"],1],
+["Leadership differs from management:",["Involves paperwork","Inspires and influences toward a vision","Follows rules","Maintains status quo"],1],
+["4Ps:",["People, planning, processes, performance","Product, price, place, promotion","Production, procurement, packaging, pricing","Policy, planning, programming, productivity"],1],
+["Organizational culture:",["Office decorations","Shared values, beliefs, and practices","Dress code only","Work schedule only"],1],
+["HRM includes:",["Only hiring","Recruitment, training, performance management, employee relations","Only payroll","Only discipline"],1],
+["Financial management:",["Only counting money","Planning, organizing, controlling financial resources","Only borrowing","Only tax payment"],1],
+["Balance sheet:",["Weighing scale","Financial statement showing assets, liabilities, and equity","Income report","Cash flow statement"],1],
+["Break-even analysis:",["When to close","Where total revenue equals total costs","Maximum profit","Minimum loss"],1],
+["TQM emphasizes:",["Inspecting final products only","Continuous improvement and customer satisfaction","Reducing workforce","Increasing prices"],1],
+["CSR:",["Paying taxes","Taking responsibility for societal and environmental impact","Charitable donations only","Government regulation"],1],
+["Supply chain management:",["Only delivery","Managing entire flow from raw materials to customer","Only manufacturing","Only retail"],1],
+["Change management:",["Changing clothes","Planning and implementing changes effectively","Avoiding change","Forcing change"],1],
+["Motivation:",["Giving orders","Process driving individuals toward goals","Punishment","Surveillance"],1],
+["Business ethics:",["Business etiquette","Moral principles guiding business behavior","Legal compliance only","Religious practices"],1],
+["Entrepreneurship:",["Working for corporation","Creating and running a new business venture","Inheriting a business","Investing in shares"],1],
+["Market research:",["Spy on competitors","Understand customer needs and market conditions","Increase prices","Reduce quality"],1],
+["Corporate governance:",["Government ownership","Systems by which companies are directed and controlled","Office politics","Employee behavior"],1],
+["Inventory management:",["Stock market","Controlling ordering, storage, and use of materials","Building maintenance","Staff management"],1],
+["Performance appraisal:",["Punish employees","Evaluate and improve employee performance","Reduce salaries","Increase working hours"],1],
+["Decision making:",["Guessing","Selecting the best alternative from options","Following intuition only","Delegating all decisions"],1],
+["Benchmarking:",["Marking benches","Comparing processes with best practices","Setting standards","Quality inspection"],1],
+["Business communication:",["Only emails","Clear exchange of information for coordination","Only formal meetings","Only documentation"],1],
+["Conflict management:",["Avoiding disagreements","Identifying and addressing conflicts constructively","Punishing parties","Ignoring problems"],1],
+["Strategic management:",["Daily operations","Formulating strategies for long-term success","Crisis management","Financial trading"],1],
+["Project management:",["Only planning","Initiating, planning, executing, monitoring, and closing","Only budgeting","Only scheduling"],1],
+["Risk management:",["Taking unnecessary risks","Identifying, assessing, and mitigating risks","Avoiding all risks","Insurance only"],1],
+["CRM:",["Being friendly","Managing interactions for business growth","Handling complaints only","Marketing only"],1],
+["Business plan:",["Employee names","Goals, strategies, and operational plans","Daily expenses","Legal notices"],1],
+["Organizational structure:",["Office layout","How activities are organized and directed","Dress code","Work schedule"],1],
+["Innovation:",["Copying competitors","Creating new products/processes adding value","Using old methods","Reducing investment"],1],
+["Accounting:",["Only tax calculations","Systematic recording and reporting of financial transactions","Only profit calculation","Only expense tracking"],1],
+["E-commerce:",["Electronic communication","Buying and selling over the internet","Email marketing","Computer manufacturing"],1],
+["Team building:",["Select sports teams","Improve collaboration and trust among members","Assign individual tasks","Conduct interviews"],1],
+["Competitive advantage:",["Winning competitions","Attributes allowing outperforming competitors","Being largest","Most employees"],1],
+["Operations management:",["Only surgery","Designing and improving systems producing goods/services","Only customer service","Only HR"],1],
+["Public relations:",["Private information","Relationship with public for positive image","Government contracts","Internal disputes"],1],
+["Diversity management:",["One group only","Valuing differences for organizational benefit","Ignoring differences","Separate facilities"],1],
+["Environment analysis:",["Office assessment","Examining external and internal factors","Conservation","Building inspection"],1],
+["Knowledge management:",["Only filing","Creating, sharing, utilizing organizational knowledge","Internet browsing","Library management"],1],
+["Negotiation:",["Arguing to win","Discussion for mutually acceptable agreements","Demanding compliance","Avoiding discussion"],1],
+["Business process reengineering:",["Hiring engineers","Fundamentally redesigning processes for dramatic improvement","Minor adjustments","Office layout change"],1],
+["Intellectual property:",["Physical property only","Patents, trademarks, copyrights, trade secrets","Office furniture","Vehicles"],1],
+["Business sustainability:",["Short-term profit","Meeting present needs without compromising future","Maximum extraction","Cost cutting"],1],
+["Primary objective of management:",["Maximum profit at any cost","Achieving goals efficiently while serving stakeholders","Employing many people","Beating competitors"],1]
+],
+
+/* ===== 4. COMMUNITY HEALTH CARE NURSING - TERM 2 ===== */
+"Community Health Care Nursing Term 2":[
+["Primary focus of community health nursing:",["Hospital-based acute care","Health of populations and communities","Individual laboratory testing","Surgical procedures"],1],
+["Alma-Ata Declaration (1978) emphasized:",["Tertiary healthcare","Primary Health Care for all","Private hospital construction","Pharmaceutical research"],1],
+["Core element of PHC:",["Organ transplantation","Essential drugs availability","Cosmetic surgery","Dialysis treatment"],1],
+["Community health nursing is classified as:",["Tertiary level care","Secondary level care","A specialty of public health nursing at primary level","Emergency care"],2],
+["Epidemiology is the study of:",["Individual cell biology","Distribution and determinants of health conditions in populations","Pharmacological interactions","Surgical techniques"],1],
+["Epidemiological triad:",["Doctor, nurse, patient","Agent, host, environment","Diagnosis, treatment, follow-up","Admission, discharge, referral"],1],
+["Incidence rate measures:",["Total existing cases","New cases during a specific period","Recovery rate","Mortality rate"],1],
+["Prevalence refers to:",["New cases only","All existing cases in a population at a given time","Cured cases","Hospital admissions"],1],
+["Mortality rate indicates:",["Number of births","Number of deaths in a population during a specific period","Hospital beds","Number of doctors"],1],
+["Infant Mortality Rate: deaths under:",["1 year per 1000 live births","5 years per 1000 live births","1 month per 1000 live births","28 days per 1000 live births"],0],
+["Maternal Mortality Ratio:",["Deaths during pregnancy per 100,000 live births","Infant deaths per 1000 births","Stillbirths per 1000 deliveries","Hospital maternal admissions"],0],
+["Vaccine given at birth in Kenya:",["DPT","BCG","OPV","Measles"],1],
+["EPI in Kenya targets:",["Adults only","Children under 1 year","Elderly population","Healthcare workers"],1],
+["Six EPI antigens EXCEPT:",["BCG","Hepatitis B","COVID-19 (routine EPI)","OPV"],2],
+["OPV administered via:",["Intramuscular injection","Oral drops","Subcutaneous injection","Intravenous drip"],1],
+["Key child health indicator:",["Stock market","Under-five mortality rate","Number of universities","Road network length"],1],
+["Undernutrition assessed using:",["Blood pressure","Weight-for-age, height-for-age, weight-for-height","Eye examination","Hearing test"],1],
+["Stunting indicates:",["Acute weight loss","Chronic malnutrition affecting linear growth","Obesity","Vitamin A excess"],1],
+["Wasting refers to:",["Low height-for-age","Low weight-for-height indicating acute malnutrition","Excess body fat","Normal growth"],1],
+["Exclusive breastfeeding recommended for:",["3 months","6 months","12 months","24 months"],1],
+["Complementary feeding starts at:",["2 months","4 months","6 months","9 months"],2],
+["WHO growth standards based on:",["Only formula-fed infants","Breastfed infants as the norm","Adult measurements","Adolescent charts"],1],
+["Vitamin A targets children aged:",["6-59 months","0-1 month only","5-15 years","Adults only"],0],
+["Iron deficiency anemia in pregnancy increases:",["Diabetes mellitus","Low birth weight and preterm delivery","Hypertension","Allergies"],1],
+["IPTp uses:",["Artemisinin","Sulfadoxine-Pyrimethamine (SP)","Paracetamol","Ibuprofen"],1],
+["FANC recommends minimum visits:",["1","4","8","12"],1],
+["First ANC visit should occur:",["3rd trimester","First trimester","At delivery","After delivery"],1],
+["TT in pregnancy prevents:",["Measles","Neonatal tetanus","Malaria","HIV"],1],
+["Danger sign in pregnancy:",["Mild backache","Severe headache with blurred vision","Fetal movements","Weight gain"],1],
+["Family planning methods:",["Permanent and temporary","Natural, barrier, hormonal, intrauterine, and permanent","Surgical and non-surgical","Public and private"],1],
+["LAM effective for:",["Up to 6 months postpartum with exclusive breastfeeding","Up to 2 years","Only 1 month","Indefinitely"],0],
+["HIV MTCT occurs during:",["Pregnancy, delivery, and breastfeeding","Only during delivery","Only through breastfeeding","Only during pregnancy"],0],
+["PMTCT includes:",["Only formula feeding","ARV prophylaxis, safe delivery, appropriate infant feeding","Only cesarean section","Only vitamin supplements"],1],
+["CBHIS collects data at:",["National level only","Community and facility level","International level only","Laboratory level only"],1],
+["DHIS2 in Kenya used for:",["Financial accounting","Health data management and reporting","Student enrollment","Traffic monitoring"],1],
+["CHV in Kenya works at:",["County hospital","Level 5 facility","Community unit level","National level"],2],
+["Community health unit serves:",["50 people","500 people","Approximately 1,000 people (100-200 households)","10,000 people"],2],
+["Home-based HIV care:",["Moving patients to hospital","Care, support, treatment adherence at home","Isolating patients","Referring all to specialist"],1],
+["TB transmitted through:",["Mosquito bites","Airborne droplets from infected person","Contaminated water","Sexual contact"],1],
+["DOTS used for:",["Malaria","Tuberculosis","HIV","Diabetes"],1],
+["Malaria prevention:",["Antibiotics only","ITN use, IRS, and chemoprevention","Surgery only","Vitamin C supplements"],1],
+["ACT is first-line for:",["Tuberculosis","Uncomplicated malaria","HIV","Typhoid"],1],
+["RDTs for malaria detect:",["Antibodies only","Malaria antigens in blood","White blood cell count","Hemoglobin levels"],1],
+["Waterborne diseases EXCEPT:",["Cholera","Typhoid","Malaria","Hepatitis A"],2],
+["ORS treats:",["Malaria","Dehydration from diarrhea","Pneumonia","HIV"],1],
+["Top 5 under-five mortality causes:",["The Big Five","The Top Five","Pneumonia, diarrhea, malaria, measles, and malnutrition","Acute conditions"],2],
+["IMCI assesses:",["Only nutrition","General danger signs, main symptoms, nutritional/immunization status","Only vaccination","Only lab results"],1],
+["Community diagnosis:",["Individual clinical diagnosis","Systematic assessment of community health problems and needs","Hospital discharge summary","Lab report analysis"],1],
+["Health education:",["Force behavior change","Promote knowledge, attitudes, practices for better health","Sell pharmaceuticals","Research only"],1],
+["Nursing process in community health:",["Assessment, diagnosis, planning, implementation, evaluation","Only assessment and diagnosis","Only treatment","Only discharge planning"],0],
+["Environmental health focuses on:",["Only air pollution","Safe water, sanitation, housing, waste disposal","Only hospital cleanliness","Only food packaging"],1],
+["Proper handwashing duration:",["5 seconds","20 seconds","1 minute","5 minutes"],1],
+["CHN role in disaster management:",["Only rescue","Prevention, preparedness, response, and recovery","Only first aid","Only media reporting"],0]
+],
+
+/* ===== 5. PUBLIC HEALTH ASSESSMENT - TERM 1 ===== */
+"Public Health Assessment Term 1":[
+["Public health is primarily concerned with:",["Individual treatment","Population health and disease prevention","Hospital administration","Surgical procedures"],1],
+["WHO definition of health includes:",["Only physical well-being","Physical, mental, and social well-being","Absence of symptoms","Financial stability"],1],
+["A health assessment is:",["A medical diagnosis","Systematic evaluation of health status and needs of a population","A laboratory test","A surgical evaluation"],1],
+["Determinants of health include:",["Only genetic factors","Social, economic, environmental, and behavioral factors","Only medical care","Only physical environment"],1],
+["Primary prevention aims to:",["Detect disease early","Prevent disease before it occurs","Treat established disease","Provide palliative care"],1],
+["Secondary prevention involves:",["Health promotion","Early detection and treatment of disease","Rehabilitation","End-of-life care"],1],
+["Tertiary prevention focuses on:",["Preventing disease onset","Early screening","Reducing disability and rehabilitation","Vaccination"],1],
+["Natural history of disease describes:",["Treatment protocols","Progression from pre-pathogenesis to resolution","Hospital admission procedures","Laboratory findings"],1],
+["Needs assessment identifies:",["Available resources only","Gaps between current and desired health conditions","Budget allocations","Staff qualifications"],1],
+["Iceberg phenomenon refers to:",["All cases detected","Hidden undetected cases exceeding detected ones","Equal disease distribution","Seasonal variation"],1],
+["Endemic disease:",["Worldwide occurrence","Constant presence in a population","Sudden increase in cases","Occasional outbreaks"],1],
+["Epidemic:",["Constant low-level disease","Occurrence above expected level in a population","Disease in animals only","Worldwide spread"],1],
+["Pandemic:",["Local outbreak","Regional increase","Epidemic over multiple countries or continents","Seasonal illness"],1],
+["Crude death rate:",["Total deaths divided by total population times 1000","Infant deaths only","Disease-specific deaths","Hospital mortality"],0],
+["Age-specific death rate:",["Overall mortality","Deaths in a specific age group per that age population","Birth rate","Life expectancy"],1],
+["Case fatality rate:",["Disease prevalence","Proportion of diagnosed cases that die from the disease","Infection rate","Recovery rate"],1],
+["Life expectancy at birth:",["Average years a newborn is expected to live","Total population","Birth rate","Death rate"],1],
+["Cross-sectional study:",["Follows subjects over time","Examines a population at one point in time","Tests an intervention","Uses laboratory methods"],1],
+["Cohort study:",["Snapshot assessment","Longitudinal observational study following groups over time","Randomized trial","Case report"],1],
+["Case-control study compares:",["Two interventions","People with disease to people without disease looking at past exposures","Healthy volunteers","Different populations"],1],
+["Relative risk used in:",["Case-control studies","Cohort studies","Cross-sectional surveys","Case reports"],1],
+["Odds ratio is measure in:",["Cohort studies","Case-control studies","Randomized trials","Ecological studies"],1],
+["Confounder:",["The main exposure","A variable distorting the true association","The outcome variable","A statistical test"],1],
+["Bias in research:",["Random variation","Systematic error leading to incorrect conclusions","Sample size","Ethical approval"],1],
+["Selection bias:",["Data mismeasured","Study sample not representative of the population","Variables confounded","Sample size large"],1],
+["Null hypothesis states:",["There is a significant effect","There is no association between variables","The study is valid","Results are generalizable"],1],
+["p-value less than 0.05:",["No significance","Statistical significance rejecting null hypothesis","Clinical significance","Sample size adequacy"],1],
+["Sensitivity measures:",["Correctly identify those without disease","Correctly identify those with disease","Disease prevalence","Test cost"],1],
+["Specificity measures:",["True positive rate","Correctly identify those without disease","Disease incidence","Test reliability"],1],
+["PPV depends on:",["Only sensitivity","Sensitivity, specificity, and prevalence","Only specificity","Sample size only"],1],
+["Health belief model explains:",["Disease transmission","Health behavior based on perceptions of susceptibility, severity, benefits, barriers","Health economics","Clinical decision making"],1],
+["Ecological model:",["Individual factors only","Multiple levels: individual, interpersonal, community, policy","Genetic factors only","Hospital environment only"],1],
+["Health indicator:",["A medical device","A measurable variable assessing health status of a population","A treatment protocol","A laboratory test"],1],
+["DHS collects data on:",["Economic markets only","Population health, nutrition, and reproductive health","Agricultural output","Educational enrollment"],1],
+["Validity means:",["Produces consistent results","Measures what it is intended to measure","Inexpensive","Easy to use"],1],
+["Reliability:",["Accuracy","Consistency or reproducibility of results","Face value","Cost effectiveness"],1],
+["Likert scale measures:",["Binary responses","Degree of agreement or attitude on a scale","Physical measurements","Laboratory values"],1],
+["Stratified sampling:",["Every nth person","Dividing population into subgroups and sampling from each","Random selection only","Convenience sampling"],1],
+["Sampling frame:",["Study conclusion","The list from which the sample is drawn","Research question","Data analysis plan"],1],
+["Qualitative research uses:",["Statistical analysis","In-depth interviews, focus groups, and observation","Laboratory experiments","Large surveys only"],1],
+["Social determinants framework by:",["WHO","IMF","World Bank","NATO"],0],
+["Health equity:",["Equal outcomes for all","Fair opportunity for everyone to attain full health potential","Same healthcare for all","No health differences"],1],
+["WHO health system building blocks:",["3","6","10","12"],1],
+["Building blocks EXCEPT:",["Service delivery","Health workforce","Information systems","Political parties"],3],
+["UHC means:",["Free healthcare","All people access needed services without financial hardship","Government insurance only","Private healthcare only"],1],
+["Alma-Ata Declaration year:",["1968","1978","1988","1998"],1],
+["Ottawa Charter year:",["1978","1986","1994","2000"],1],
+["Three levels of healthcare:",["Primary, secondary, tertiary","Emergency, outpatient, inpatient","Preventive, curative, rehabilitative","Rural, urban, peri-urban"],0],
+["Community participation:",["Passive recipients","Active involvement in planning, implementing, evaluating","Government controls all","Only health professionals"],1],
+["PRECEDE-PROCEED model:",["Disease diagnosis","Health promotion planning and evaluation","Drug development","Surgical planning"],1],
+["Health promotion definition:",["Medical treatment only","Process of enabling people to increase control over and improve their health","Only vaccination","Only screening"],1]
+],
+
+/* ===== 6. PUBLIC HEALTH ASSESSMENT - TERM 2 ===== */
+"Public Health Assessment Term 2":[
+["Analytical epidemiology aims to:",["Describe disease distribution","Identify causes and risk factors by testing hypotheses","Monitor health trends","Provide clinical care"],1],
+["RCT is considered:",["Weakest design","Gold standard for evaluating interventions","Only for observational research","Not ethical"],1],
+["Blinding reduces:",["Sample size","Bias from knowing treatment assignment","Cost","Duration"],1],
+["Double-blinding:",["Only participants unaware","Neither participants nor investigators know assignment","Data analysts blind","Ethicists blind"],1],
+["Hawthorne effect:",["Statistical error","People changing behavior because they know they are observed","Disease transmission","Treatment side effects"],1],
+["Systematic review:",["A single study","Synthesizes all relevant research using explicit methods","Expert opinion","Case report"],1],
+["Meta-analysis:",["Reviews without statistics","Statistical methods combining results from multiple studies","Tests a new hypothesis","Qualitative study"],1],
+["Attributable risk:",["Total disease burden","Excess risk due to a specific exposure","Relative comparison","Population prevalence"],1],
+["Population attributable risk:",["Individual risk only","Both risk and prevalence of exposure in population","Sample size","Study design"],1],
+["Bradford Hill criteria assess:",["Statistical significance","Causality in epidemiology","Screening accuracy","Sample size"],1],
+["NOT a Bradford Hill criterion:",["Strength of association","Biological plausibility","Sample size","Temporality"],2],
+["Surveillance system:",["Treats patients","Continuously monitors health events for planning and action","Conducts research","Provides funding"],1],
+["Active surveillance:",["Waiting for reports","Actively seeking out cases","Passive data collection","Media reports"],1],
+["Passive surveillance:",["Active case finding","Routine reporting by health facilities","Door-to-door surveys","Satellite data"],1],
+["Outbreak investigation steps:",["Treating all patients","Verify, define cases, describe epi, test hypothesis, control, evaluate","Only lab confirmation","Only media announcement"],1],
+["Epidemic curve shows:",["Disease prevalence","Number of cases over time","Mortality trend","Treatment outcomes"],1],
+["Point source epidemic curve:",["Gradual rise","Sharp rise and fall within one incubation period","Continuous increase","Random pattern"],1],
+["Propagated outbreak curve:",["Single peak","Multiple peaks over successive incubation periods","Flat line","No pattern"],1],
+["Standard deviation:",["Central tendency","Spread or variability of data","Sample size","Mean value"],1],
+["Mean:",["Middle value","Average of all values","Most frequent value","Range"],1],
+["Median:",["Average","Middle value when data is ordered","Most common value","Standard deviation"],1],
+["Mode:",["Average","Middle value","Most frequently occurring value","Range"],1],
+["Normal distribution:",["Skewed","Symmetrical bell-shaped curve","Flat","Bimodal"],1],
+["Confidence interval:",["Exact value","Range within which true value likely falls","Sample size","P-value"],1],
+["95% CI means:",["95% of data in range","If repeated 100 times, 95 intervals would contain true value","95% of people healthy","5% error always"],1],
+["Chi-square test:",["Comparing means","Testing association between categorical variables","Measuring correlation","Calculating regression"],1],
+["Correlation coefficient ranges:",["0 to 100","-1 to +1","0 to 1 only","1 to 10"],1],
+["Negative correlation:",["No relationship","As one variable increases, the other decreases","Both increase together","Random pattern"],1],
+["Qualitative data analysis:",["Statistical tests","Thematic analysis and coding","Meta-analysis","Regression"],1],
+["Saturation in qualitative research:",["Data insufficient","No new themes emerging from additional data","Statistical significance","Sample size calculation"],1],
+["Logic model:",["Statistical analysis","Relationship between resources, activities, outputs, and outcomes","Financial statements","Organizational chart"],1],
+["Process evaluation:",["Long-term impact","Whether program was implemented as planned","Cost effectiveness","Policy compliance"],1],
+["Outcome evaluation:",["Implementation fidelity","Changes in knowledge, behavior, or health status","Activity count","Budget adherence"],1],
+["Impact evaluation:",["Short-term outputs","Long-term effects and causal attribution","Activity completion","Stakeholder satisfaction"],1],
+["DALY combines:",["Only mortality","Years of life lost and years lived with disability","Only morbidity","Only healthcare costs"],1],
+["QALY stands for:",["Quality Adjusted Life Year","Quantitative Assessment of Life Yield","Quality Assurance Life Yield","Quantified Annual Life Year"],0],
+["Health economics:",["Only costs","How resources are allocated for health to maximize benefit","Only insurance","Only pharmaceuticals"],1],
+["Cost-effectiveness analysis:",["Only costs","Costs and health outcomes of different interventions","Only outcomes","Patient satisfaction"],1],
+["Budget impact analysis:",["Clinical outcomes","Financial consequences of adopting an intervention","Health indicators","Disease prevalence"],1],
+["Task shifting:",["Random hiring","Optimal use of workforce through skill mix and redistribution","Only recruitment","Only training"],1],
+["Health information systems:",["Only computers","Data collection, processing, analysis, reporting, and use","Only paper records","Only Internet access"],1],
+["Data quality dimensions:",["Only accuracy","Accuracy, completeness, timeliness, consistency, validity","Only timeliness","Only volume"],1],
+["DHIS2:",["Hospital management system","Open-source platform for health data management","Pharmaceutical database","Billing system"],1],
+["Vital registration:",["Only births","Births, deaths, marriages, and other vital events","Only deaths","Hospital admissions"],1],
+["Census:",["Health data only","Complete count including demographic and social characteristics","Economic data only","Agricultural statistics"],1],
+["SDG for health:",["SDG 1","SDG 3","SDG 5","SDG 8"],1],
+["SDG UHC target:",["By 2020","By 2030","By 2040","By 2050"],1],
+["NCDs include:",["Malaria and TB","Cardiovascular disease, cancer, diabetes, chronic respiratory disease","HIV and AIDS","Measles and polio"],1],
+["NCDs account for approx. what % of global deaths:",["10%","30%","50%","74%"],3],
+["WHO NCD best buys:",["Only vaccination","Tobacco control, alcohol reduction, healthy diet, physical activity","Only drug treatment","Only screening"],1],
+["Health in All Policies means:",["Only health ministry considers health","All sectors consider health implications of their policies","Health sector makes all policies","Policies only for hospitals"],1]
+],
+
+/* ===== 7. PUBLIC HEALTH ASSESSMENT - FINAL EXAM ===== */
+"Public Health Assessment Final":[
+["WHO Commission on Social Determinants reported in:",["2005","2008","2012","2015"],1],
+["Diffusion of innovations explains:",["Disease spread","How new ideas and practices spread through populations","Health economics","Clinical guidelines"],1],
+["Transtheoretical Model stages:",["Only 2 stages","Precontemplation, contemplation, preparation, action, maintenance, termination","Only diagnosis and treatment","Only screening stages"],1],
+["Social marketing in public health:",["Medical treatment only","Commercial marketing principles to influence health behavior","Legal enforcement","Economic sanctions"],1],
+["Advocacy in public health:",["Provide clinical care","Influence policy and resource allocation for health","Conduct research","Manage hospitals"],1],
+["Policy brief:",["Legal document","Concise summary of evidence and recommendations for policymakers","Research paper","Budget plan"],1],
+["Health impact assessment:",["Clinical outcomes","Potential health effects of policies or projects","Hospital performance","Drug efficacy"],1],
+["Environmental HIA:",["Only air quality","How environmental changes affect human health","Only water quality","Only soil contamination"],1],
+["Climate change health pathways:",["Only heat waves","Heat, vector-borne diseases, food security, mental health","Only floods","Only air pollution"],1],
+["One Health approach:",["Human health only","Interconnection of human, animal, and environmental health","Animal health only","Environmental science only"],1],
+["Zoonotic diseases transmitted from:",["Human to human","Animals to humans","Water to human","Air to human"],1],
+["AMR driven by:",["Only human medicine","Overuse and misuse in humans, animals, and agriculture","Only veterinary use","Only agricultural use"],1],
+["Neglected tropical diseases affect:",["Wealthy nations","Populations in poverty with limited clean water and sanitation","Urban populations","Developed countries"],1],
+["IHR:",["National laws","Global framework for managing public health emergencies of international concern","Regional guidelines","Hospital regulations"],1],
+["PHEIC:",["Public Health Emergency of International Concern","Primary Health Education and Information Center","Public Health Evaluation and Inspection Code","Preventive Health Emergency Intervention Committee"],0],
+["Global Health Security Agenda:",["Economic security","Building capacity to prevent, detect, respond to infectious disease threats","Military security","Food security only"],1],
+["Digital health:",["Only electronic medical records","Telemedicine, health info systems, mobile health, data analytics","Only social media","Only websites"],1],
+["mHealth:",["Medical health","Mobile and wireless technologies for health","Mental health","Men's health"],1],
+["Telemedicine:",["In-person care only","Clinical services remotely using technology","Only prescriptions","Only laboratory services"],1],
+["Big data characteristics:",["Small volume","Volume, velocity, variety, veracity, and value","Only accuracy","Only speed"],1],
+["Ethical principles in research:",["Only beneficence","Respect for persons, beneficence, and justice","Only confidentiality","Only consent"],1],
+["Informed consent:",["Only a signature","Voluntary agreement based on adequate information and comprehension","Parental permission only","Witness testimony"],1],
+["IRBs ensure:",["Research funding","Ethical compliance of research involving human subjects","Data accuracy","Publication quality"],1],
+["Belmont Report:",["Clinical guidelines","Basic ethical principles: respect for persons, beneficence, justice","Data collection methods","Statistical standards"],1],
+["Vulnerable populations require:",["Exclusion from research","Additional protections due to susceptibility to coercion or harm","No consent","Less oversight"],1],
+["CBPR:",["Researcher-driven","Equally involves community members in all research phases","Excludes community","Only quantitative methods"],1],
+["Knowledge translation:",["Translating documents","Moving research evidence into policy and practice","Education programs","Data collection"],1],
+["Implementation science:",["Basic science","Methods to promote integration of research findings into routine practice","Drug development","Disease transmission"],1],
+["MRC framework for complex interventions:",["Only evaluation","Development, feasibility, evaluation, implementation","Only intervention","Only piloting"],1],
+["Stepped wedge trial:",["Uncontrolled","Sequentially rolls out intervention to all participants","Cross-sectional","Excludes control group"],1],
+["Difference-in-differences:",["Mean values","Causal effect by comparing changes over time between groups","Correlation","Prevalence"],1],
+["Propensity score matching:",["Reduces sample size","Reduces confounding in observational studies","Reduces measurement error","Reduces missing data"],1],
+["Geospatial analysis:",["Only maps","GIS to analyze spatial patterns of health","Only GPS","Only satellite imagery"],1],
+["Disease hotspot:",["An internet cafe","Geographic area with significantly higher disease occurrence","A hospital","A research center"],1],
+["Social network analysis:",["Internet connections","Relationships and structures influencing health and disease transmission","Computer networks","Phone networks"],1],
+["Life course approach:",["Only childhood","Health as product of exposures across the lifespan","Only elderly care","Only adult health"],1],
+["Epigenetics in public health:",["Genetic mutations","Environmental influences on gene expression without changing DNA","DNA sequencing","Genetic engineering"],1],
+["Health literacy:",["Reading medical books","Capacity to obtain, process, understand health information for decisions","Medical degree","Health education"],1],
+["Cultural competence:",["Ignoring culture","Understanding and integrating cultural factors in care and assessment","Treating all groups the same","Language translation only"],1],
+["Socio-ecological model levels:",["2","5: individual, interpersonal, organizational, community, policy","3","7"],1],
+["Health system resilience:",["Resistance to change","Ability to prepare for, respond to, and recover from shocks","Budget surplus","Staff retention"],1],
+["Sendai Framework:",["Health promotion","Disaster risk reduction (2015-2030)","Climate change","Education"],1],
+["Occupational health:",["Only workplace injuries","Health and safety risks in the work environment","Only stress","Only physical hazards"],1],
+["Mental health in public health:",["Only severe mental illness","Promotion, prevention, and treatment across the population","Only depression screening","Only hospital care"],1],
+["mhGAP program:",["Builds hospitals","Scales up services for mental, neurological, substance use disorders","Trains specialists only","Funds research only"],1],
+["Substance abuse prevention:",["Only punishment","Demand reduction, harm reduction, and supply reduction","Only rehabilitation","Only law enforcement"],1],
+["Syndromic approach:",["Requires lab confirmation","Uses clinical symptoms to guide treatment without lab confirmation","Always inappropriate","Delays treatment"],1],
+["Task shifting:",["Reducing workload","Redistributing tasks to less specialized cadres with training","Eliminating positions","Outsourcing services"],1],
+["PHC essential package:",["Only curative","Comprehensive: promotive, preventive, curative, rehabilitative, palliative","Only preventive","Only emergency"],1],
+["Ultimate goal of public health assessment:",["Data for reports","Generating evidence to inform decisions that improve population health","Meeting donor requirements","Publishing papers"],1]
+],
+
+/* ===== 8. COMMUNITY HEALTH CARE NURSING - FINAL EXAM (BACHELOR'S) ===== */
+"Community Health Care Nursing Final":[
+["Scope of community health nursing:",["Hospital ward care only","Individual, family, group, and community levels of care","Only administrative duties","Only emergency care"],1],
+["CHN process begins with:",["Planning","Community assessment to identify health needs","Implementation","Evaluation"],1],
+["Community diagnosis:",["A medical diagnosis","Statement of health problem, affected group, causative factors, evidence","A nursing order","A care plan goal"],1],
+["Family health nursing views family as:",["Only individuals","A unit of care with interacting members","A social club","An administrative entity"],1],
+["Family life cycle:",["Birth to death only","Formation through expansion, contraction, and dissolution","Only child-rearing","Only aging"],1],
+["Genogram maps:",["Community resources","Family structure and relationships across generations","Disease patterns only","Financial status"],1],
+["Ecomap shows:",["Family tree","Family connections to community and external systems","Genetic disorders","Household structure"],1],
+["Home visiting is core because:",["Inexpensive only","Reaches people in their environment for assessment, education, care","Replaces hospitals","Required by law"],1],
+["Initial home visit should:",["Provide all care immediately","Establish rapport and assess the home situation","Skip assessment","Only collect data"],1],
+["School health programs:",["Only first aid","Health screening, health education, immunization, and referral","Only medication administration","Only sports clearance"],1],
+["Occupational health nursing:",["Only workplace injuries","Promoting and protecting worker health and safety","Only sick leave management","Only compensation claims"],1],
+["CHN as coordinator:",["Provides all direct care","Organizes and integrates services across providers and levels","Only supervises CHVs","Only manages budgets"],1],
+["Case management:",["Only referral","Assessing, planning, implementing, coordinating, and evaluating care","Only documentation","Only home visits"],1],
+["Referral systems:",["Patients get lost","Continuity of care across different health levels","Only upward referral","Only hospital admission"],1],
+["Community health committees:",["Replace health workers","Facilitate community participation in health governance","Only raise funds","Only build clinics"],1],
+["CHN in disaster preparedness:",["Only treatment","Risk assessment, planning, community education, response coordination","Only evacuation","Only reporting"],1],
+["Triage in disaster:",["Treat everyone equally","Sorting patients by severity to prioritize care","Ignore minor injuries","Treat only children"],1],
+["Palliative care in community:",["Only end-of-life care","Relief from suffering and improved quality of life for life-limiting illness","Only pain medication","Only spiritual care"],1],
+["Geriatric nursing in community:",["Only physical decline","Comprehensive health needs: physical, mental, social, functional","Only dementia","Only falls prevention"],1],
+["ADLs include:",["Only work tasks","Bathing, dressing, eating, toileting, transferring, continence","Only recreational","Only social activities"],1],
+["Katz Index measures:",["Mental status","Independence in ADLs","Pain level","Nutritional status"],1],
+["Mental health nursing in community:",["Institutionalize patients","Promote mental wellness and support recovery in least restrictive setting","Only medicate patients","Only crisis intervention"],1],
+["Crisis intervention:",["Long-term therapy","Immediate, short-term support for acute psychological distress","Ignores the problem","Only refers to hospital"],1],
+["Rehabilitation nursing:",["Only physical recovery","Maximum functional ability and community reintegration","Only medication adherence","Only social activities"],1],
+["CHN as researcher:",["Only collects data","Generates and applies evidence to improve practice","Only publishes papers","Only analyzes statistics"],1],
+["Quality assurance:",["Unnecessary","Systematically monitors and evaluates care against standards","Only patient satisfaction","Only counts visits"],1],
+["Clinical audit:",["Financial records","Clinical practice against agreed standards for improvement","Staff attendance","Equipment inventory"],1],
+["Evidence-based practice:",["Only tradition","Best available evidence, clinical expertise, and client preferences","Only research","Only experience"],1],
+["Leadership in CHN:",["Only authority","Influencing and guiding others toward health goals","Only management tasks","Only supervision"],1],
+["Transformational leadership:",["Compliance only","Inspires followers to exceed expectations through vision and motivation","Obedience","Routine only"],1],
+["Change management:",["No planning","Systematic approach to transitioning individuals and organizations","Only top-down direction","Only policy changes"],1],
+["Stakeholder engagement:",["Optional","Relevant parties participate in planning and decision-making","Only includes donors","Only includes government"],1],
+["Cultural safety:",["Treating everyone the same","Care that is culturally appropriate and does not demean the patient","Learning languages only","Only dietary considerations"],1],
+["Treaty of Waitangi in nursing:",["Economic policy","Partnership, protection, and participation with indigenous peoples","Military agreement","International trade"],1],
+["Health promotion strategies:",["Only medical treatment","Education, policy advocacy, environmental modification, community empowerment","Only medication","Only screening"],1],
+["Nursing code of ethics:",["Salary guidelines","Professional standards for ethical conduct and decision-making","Work schedules","Uniform requirements"],1],
+["Documentation in CHN:",["Optional","Legal record, communication, and evidence for quality improvement","Only serves billing","Only for reports"],1],
+["CHN as educator:",["Only lectures in classrooms","Facilitates learning for individuals, families, and communities","Only writes materials","Only trains students"],1],
+["Motivational interviewing:",["Tells patients what to do","Collaboratively explores and resolves ambivalence about change","Uses punishment","Ignores resistance"],1],
+["Group health education:",["Only individual problems","Reaching many people, peer support, and shared learning","Only children","Only chronic patients"],1],
+["CHN in humanitarian crises:",["Only medical treatment","Meeting basic health needs while respecting dignity and rights","Only shelter","Only food distribution"],1],
+["Sphere standards:",["Optional guidelines","Minimum standards for humanitarian response quality and accountability","Legal requirements","Only for hospitals"],1],
+["Infection prevention in community:",["Only hospital protocols","Hand hygiene, waste management, and appropriate PPE adapted to community","Only medication","Only isolation"],1],
+["Contact tracing:",["Only notification","Identifying and following up with people exposed to an infected person","Only treatment","Only vaccination"],1],
+["Pharmacovigilance role:",["Unnecessary","Monitoring and reporting adverse drug reactions in community","Only dispensing","Only prescribing"],1],
+["Community-based distributive services:",["Only facility-based care","Delivering services at community level through CHVs and outreach","Only hospital clinics","Only private practice"],1],
+["Comprehensive PHC:",["Only selective interventions","Addressing all health determinants through intersectoral action","Only vertical programs","Only curative services"],1],
+["Intersectoral collaboration:",["Only health sector","Multiple sectors working together for health outcomes","Only government action","Only NGO involvement"],1],
+["CHN as changemaker:",["Maintains status quo","Catalyst for positive health changes in the community","Only follows orders","Only implements programs"],1],
+["Future of CHN:",["Declining importance","Greater use of technology, expanded scope, stronger community partnerships","Only hospital-based care","Only administrative roles"],1]
+]
+
+};
+
+/* ===== APP STATE ===== */
+var state={student:{},questions:[],answers:{},currentQ:0,timeLeft:CONFIG.totalTime,timerInterval:null,submitted:false};
+
+function showSection(id){document.querySelectorAll('main > section').forEach(function(s){s.classList.add('section-hidden')});document.getElementById(id).classList.remove('section-hidden');window.scrollTo({top:0,behavior:'smooth'});}
+
+function showToast(msg,type){type=type||'info';var t=document.createElement('div');t.className='toast toast-'+type;var ic={success:'check-circle',error:'times-circle',info:'info-circle'};t.innerHTML='<i class="fas fa-'+(ic[type]||'info-circle')+' mr-2"></i>'+msg;document.getElementById('toast-container').appendChild(t);setTimeout(function(){t.style.opacity='0';t.style.transform='translateY(-12px)';setTimeout(function(){t.remove()},300)},4000);}
+
+function handleRegistration(){
+  var f={iumId:document.getElementById('f-iumid').value.trim(),unhcrId:document.getElementById('f-unhcr').value.trim(),kenyaId:document.getElementById('f-kenya').value.trim(),fullName:document.getElementById('f-name').value.trim(),email:document.getElementById('f-email').value.trim(),sex:document.getElementById('f-sex').value,age:document.getElementById('f-age').value.trim(),program:document.getElementById('f-program').value,level:document.getElementById('f-level').value};
+  for(var k in f){if(!f[k]){showToast('Please fill in all required fields.','error');return;}}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email)){showToast('Please enter a valid email address.','error');return;}
+  var age=parseInt(f.age);if(isNaN(age)||age<16||age>80){showToast('Please enter a valid age (16-80).','error');return;}
+  state.student=f;
+  document.getElementById('instr-program-label').textContent=f.program+' — '+f.level;
+  showSection('sec-instructions');
+}
+
+document.getElementById('agree-check').addEventListener('change',function(){var b=document.getElementById('btn-start');if(this.checked){b.disabled=false;b.classList.remove('opacity-50','cursor-not-allowed');}else{b.disabled=true;b.classList.add('opacity-50','cursor-not-allowed');}});
+
+function startExam(){
+  var bank=QBANKS[state.student.program];
+  if(!bank||bank.length===0){showToast('Question bank not found for this programme.','error');return;}
+  state.questions=bank.slice();
+  for(var i=state.questions.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var tmp=state.questions[i];state.questions[i]=state.questions[j];state.questions[j]=tmp;}
+  state.answers={};state.currentQ=0;state.timeLeft=CONFIG.totalTime;state.submitted=false;
+  document.getElementById('exam-prog-label').textContent=state.student.program;
+  document.getElementById('exam-level-label').textContent=state.student.level;
+  var grid=document.getElementById('q-nav-grid');grid.innerHTML='';
+  for(var i=0;i<state.questions.length;i++){var btn=document.createElement('button');btn.className='q-nav-btn'+(i===0?' current':'');btn.textContent=i+1;btn.setAttribute('aria-label','Go to question '+(i+1));btn.onclick=(function(idx){return function(){goToQuestion(idx)}})(i);grid.appendChild(btn);}
+  showSection('sec-exam');renderQuestion();startTimer();
+}
+
+function startTimer(){clearInterval(state.timerInterval);updateTimerDisplay();state.timerInterval=setInterval(function(){if(state.submitted){clearInterval(state.timerInterval);return;}state.timeLeft--;updateTimerDisplay();if(state.timeLeft<=0){clearInterval(state.timerInterval);showToast('Time is up! Exam submitted automatically.','error');finishExam();}},1000);}
+function updateTimerDisplay(){var m=Math.floor(state.timeLeft/60);var s=state.timeLeft%60;var el=document.getElementById('timer-display');el.textContent=(m<10?'0':'')+m+':'+(s<10?'0':'')+s;if(state.timeLeft<=300)el.classList.add('timer-danger');else el.classList.remove('timer-danger');}
+
+function renderQuestion(){
+  var q=state.questions[state.currentQ],idx=state.currentQ,total=state.questions.length,letters=['A','B','C','D'];
+  document.getElementById('q-counter').textContent=(idx+1)+'/'+total;
+  document.getElementById('exam-progress').style.width=((idx+1)/total*100)+'%';
+  var h='<div class="mb-6"><span class="text-xs font-semibold px-3 py-1 rounded-full" style="background:rgba(196,30,58,0.08);color:var(--primary)">Question '+(idx+1)+' of '+total+'</span></div>';
+  h+='<h3 class="text-lg md:text-xl font-semibold mb-6 leading-relaxed">'+escapeHtml(q[0])+'</h3><div class="space-y-3">';
+  for(var oi=0;oi<q[1].length;oi++){var sel=state.answers[idx]===oi;h+='<button class="option-btn'+(sel?' selected':'')+'" onclick="selectAnswer('+idx+','+oi+')" aria-label="Option '+letters[oi]+'"><span class="option-letter">'+letters[oi]+'</span><span>'+escapeHtml(q[1][oi])+'</span></button>';}
+  h+='</div>';document.getElementById('question-area').innerHTML=h;
+  document.getElementById('btn-prev').disabled=idx===0;
+  document.getElementById('btn-next').innerHTML=idx===total-1?'Finish <i class="fas fa-flag-checkered ml-1"></i>':'Next <i class="fas fa-chevron-right ml-1"></i>';
+  var navBtns=document.querySelectorAll('.q-nav-btn');
+  for(var i=0;i<navBtns.length;i++){navBtns[i].className='q-nav-btn';if(i===idx)navBtns[i].classList.add('current');if(state.answers[i]!==undefined)navBtns[i].classList.add('answered');}
+  document.getElementById('answered-count').textContent=Object.keys(state.answers).length+'/'+total;
+}
+
+function selectAnswer(qIdx,optIdx){if(state.submitted)return;state.answers[qIdx]=optIdx;renderQuestion();}
+function goToQuestion(idx){state.currentQ=idx;renderQuestion();}
+function prevQuestion(){if(state.currentQ>0){state.currentQ--;renderQuestion();}}
+function nextQuestion(){if(state.currentQ<state.questions.length-1){state.currentQ++;renderQuestion();}else{submitExam();}}
+
+function submitExam(){var a=Object.keys(state.answers).length,t=state.questions.length,u=t-a;document.getElementById('confirm-msg').textContent='You have answered '+a+' out of '+t+' questions.';document.getElementById('confirm-warn').textContent=u>0?u+' question(s) will be left unanswered.':'All questions have been answered.';document.getElementById('confirm-modal').classList.remove('section-hidden');}
+function closeModal(){document.getElementById('confirm-modal').classList.add('section-hidden');}
+function confirmSubmit(){closeModal();finishExam();}
+
+function finishExam(){
+  if(state.submitted)return;state.submitted=true;clearInterval(state.timerInterval);
+  var total=state.questions.length,correct=0,wrong=0,unanswered=0,results=[];
+  for(var i=0;i<total;i++){var q=state.questions[i],ua=state.answers[i],ca=q[2];if(ua===undefined)unanswered++;else if(ua===ca)correct++;else wrong++;results.push({question:q[0],options:q[1],correct:ca,userAnswer:ua});}
+  var score=correct*CONFIG.marksPerQ,maxScore=total*CONFIG.marksPerQ,percent=Math.round(score/maxScore*100),passed=percent>=CONFIG.passPercent,status=passed?'PASSED':'FAILED';
+  renderResults(correct,wrong,unanswered,score,maxScore,percent,passed,status,results);
+  sendToSheet(correct,wrong,unanswered,score,maxScore,percent,passed,status);
+}
+
+function renderResults(correct,wrong,unanswered,score,maxScore,percent,passed,status,results){
+  var L=['A','B','C','D'],h='';
+  h+='<div class="bg-white rounded-2xl card-shadow-lg overflow-hidden mb-6">';
+  h+='<div class="p-8 text-center" style="background:'+(passed?'linear-gradient(135deg,rgba(22,163,74,0.06),rgba(22,163,74,0.02))':'linear-gradient(135deg,rgba(220,38,38,0.06),rgba(220,38,38,0.02))')+'">';
+  h+='<div class="score-circle mx-auto mb-6 '+(passed?'pass':'fail')+'"><span class="text-4xl font-bold" style="color:'+(passed?'var(--success)':'var(--danger)')+'">'+percent+'%</span><span class="text-sm font-semibold" style="color:var(--muted)">'+score+'/'+maxScore+'</span></div>';
+  h+='<div class="inline-block px-5 py-2 rounded-full text-white font-bold text-lg mb-3" style="background:'+(passed?'var(--success)':'var(--danger)')+'"><i class="fas fa-'+(passed?'trophy':'times-circle')+' mr-2"></i>'+status+'</div>';
+  if(passed){h+='<h2 class="text-2xl font-bold mb-2" style="color:var(--success)">Congratulations!</h2><p class="text-base" style="color:var(--muted)">Excellent performance, <strong>'+escapeHtml(state.student.fullName)+'</strong>. You have successfully passed the <strong>'+escapeHtml(state.student.program)+'</strong> ('+state.student.level+') examination. Results sent to <strong>'+escapeHtml(state.student.email)+'</strong>.</p>';}
+  else{h+='<h2 class="text-2xl font-bold mb-2" style="color:var(--danger)">Results: Not Yet Passed</h2><p class="text-base" style="color:var(--muted)">Thank you, <strong>'+escapeHtml(state.student.fullName)+'</strong>. You did not meet the passing threshold. Results sent to <strong>'+escapeHtml(state.student.email)+'</strong>. Please review and try again.</p>';}
+  h+='</div>';
+  h+='<div class="grid grid-cols-3 divide-x" style="border-top:1px solid var(--border)"><div class="p-4 text-center"><p class="text-2xl font-bold" style="color:var(--success)">'+correct+'</p><p class="text-xs font-semibold" style="color:var(--muted)">Correct</p></div><div class="p-4 text-center"><p class="text-2xl font-bold" style="color:var(--danger)">'+wrong+'</p><p class="text-xs font-semibold" style="color:var(--muted)">Wrong</p></div><div class="p-4 text-center"><p class="text-2xl font-bold" style="color:var(--warning)">'+unanswered+'</p><p class="text-xs font-semibold" style="color:var(--muted)">Unanswered</p></div></div></div>';
+
+  h+='<div class="bg-white rounded-2xl card-shadow p-6 mb-6"><h3 class="font-bold text-lg mb-4" style="color:var(--primary-dark)"><i class="fas fa-user-graduate mr-2"></i>Candidate Information</h3><div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">';
+  h+='<div><span class="block text-xs font-semibold" style="color:var(--muted)">IUM ID</span><span class="font-semibold">'+escapeHtml(state.student.iumId)+'</span></div>';
+  h+='<div><span class="block text-xs font-semibold" style="color:var(--muted)">Full Name</span><span class="font-semibold">'+escapeHtml(state.student.fullName)+'</span></div>';
+  h+='<div><span class="block text-xs font-semibold" style="color:var(--muted)">Programme</span><span class="font-semibold">'+escapeHtml(state.student.program)+'</span></div>';
+  h+='<div><span class="block text-xs font-semibold" style="color:var(--muted)">Level</span><span class="font-semibold">'+state.student.level+'</span></div>';
+  h+='</div></div>';
+
+  h+='<div class="bg-white rounded-2xl card-shadow p-6"><h3 class="font-bold text-lg mb-4" style="color:var(--primary-dark)"><i class="fas fa-clipboard-list mr-2"></i>Detailed Answer Review</h3><div class="space-y-4">';
+  for(var i=0;i<results.length;i++){var r=results[i],isC=r.userAnswer===r.correct,isU=r.userAnswer===undefined;
+    h+='<div class="p-4 rounded-xl" style="background:var(--bg);border-left:4px solid '+(isU?'var(--warning)':isC?'var(--success)':'var(--danger)')+'">';
+    h+='<p class="text-sm font-semibold mb-2"><span style="color:var(--muted)">Q'+(i+1)+'.</span> '+escapeHtml(r.question)+'</p><div class="grid grid-cols-1 sm:grid-cols-2 gap-1 text-sm">';
+    for(var oi=0;oi<r.options.length;oi++){var cls='',icon='';if(oi===r.correct){cls='font-bold';icon='<i class="fas fa-check-circle mr-1" style="color:var(--success)"></i>';}if(oi===r.userAnswer&&oi!==r.correct){cls='font-bold';icon='<i class="fas fa-times-circle mr-1" style="color:var(--danger)"></i>';}var col=oi===r.correct?'var(--success)':(oi===r.userAnswer&&oi!==r.correct?'var(--danger)':'var(--muted)');h+='<div class="'+cls+'" style="color:'+col+'">'+icon+L[oi]+') '+escapeHtml(r.options[oi])+'</div>';}
+    h+='</div>';if(isU)h+='<p class="text-xs mt-2 font-semibold" style="color:var(--warning)"><i class="fas fa-exclamation-triangle mr-1"></i>Not answered</p>';h+='</div>';}
+  h+='</div></div>';
+  h+='<div id="saving-indicator" class="text-center mt-6 p-4 rounded-xl" style="background:rgba(196,30,58,0.05)"><i class="fas fa-spinner fa-spin mr-2" style="color:var(--primary)"></i><span class="text-sm font-medium" style="color:var(--muted)">Saving results and sending email...</span></div>';
+
+  document.getElementById('results-container').innerHTML=h;showSection('sec-results');if(passed)launchConfetti();
+}
+
+function sendToSheet(correct,wrong,unanswered,score,maxScore,percent,passed,status){
+  var d={iumId:state.student.iumId,unhcrId:state.student.unhcrId,kenyaId:state.student.kenyaId,fullName:state.student.fullName,email:state.student.email,sex:state.student.sex,age:state.student.age,program:state.student.program,level:state.student.level,score:score,maxScore:maxScore,percentage:percent,status:status,correct:correct,wrong:wrong,unanswered:unanswered,timestamp:new Date().toISOString()};
+  if(CONFIG.scriptURL==='https://script.google.com/macros/s/AKfycbxqE5gmjNp76yBYgyNAg3Z4ACgnLX2RhwNLJfYCsFm998xJcFeT171oyBv-bt2LioK_Ew/exec'){var ind=document.getElementById('saving-indicator');if(ind){ind.innerHTML='<p class="text-sm font-medium" style="color:var(--warning)"><i class="fas fa-exclamation-triangle mr-2"></i>Google Sheets not configured. Results displayed above. Contact admin to set up the Apps Script.</p>';}return;}
+  fetch(CONFIG.scriptURL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)}).then(function(){var ind=document.getElementById('saving-indicator');if(ind){ind.innerHTML='<p class="text-sm font-medium" style="color:var(--success)"><i class="fas fa-check-circle mr-2"></i>Results saved and email sent successfully.</p>';}showToast('Results sent to '+state.student.email,'success');}).catch(function(err){var ind=document.getElementById('saving-indicator');if(ind){ind.innerHTML='<p class="text-sm font-medium" style="color:var(--danger)"><i class="fas fa-times-circle mr-2"></i>Failed to save. Screenshot your results. Error: '+err.message+'</p>';}});
+}
+
+function launchConfetti(){var colors=['#C41E3A','#C9A84C','#16A34A','#E8374F','#F0DEB4','#8B1A2B','#F59E0B'];for(var i=0;i<60;i++){(function(delay){setTimeout(function(){var p=document.createElement('div');p.className='confetti-piece';p.style.left=Math.random()*100+'vw';p.style.width=(Math.random()*8+6)+'px';p.style.height=(Math.random()*8+6)+'px';p.style.background=colors[Math.floor(Math.random()*colors.length)];p.style.borderRadius=Math.random()>0.5?'50%':'2px';p.style.animationDuration=(Math.random()*3+2)+'s';document.body.appendChild(p);setTimeout(function(){p.remove()},5000);},delay);})(i*40);}}
+
+function escapeHtml(str){var d=document.createElement('div');d.textContent=str;return d.innerHTML;}
+</script>
+</body>
+</html>
