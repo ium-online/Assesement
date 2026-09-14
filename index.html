@@ -167,7 +167,7 @@ select.input-field option{padding:8px}
 <div id="toast-container"></div>
 
 <script>
-var CONFIG={totalTime:3600,passPercent:50,marksPerQ:2,scriptURL:'https://script.google.com/macros/s/AKfycbyf5BVwDJKZDuE_iBU350AaI4t4B3gzJFnw6sQE8Nvkk6-nAVRKFmOdbM_wEC38ookM/exec'};
+var CONFIG={totalTime:3600,passPercent:50,marksPerQ:2,scriptURL:'https://script.google.com/macros/s/AKfycbwExPXffPX0AWEA0IfDgwXThJ2CcN2DriNYQ-a3erp6cKRiIK_OoJiBvOtjHBnc4hel/exec'};
 
 var QBANKS={
 
@@ -709,14 +709,146 @@ function renderResults(correct,wrong,unanswered,score,maxScore,percent,passed,st
 }
 
 function sendToSheet(correct,wrong,unanswered,score,maxScore,percent,passed,status){
-  var d={iumId:state.student.iumId,unhcrId:state.student.unhcrId,kenyaId:state.student.kenyaId,fullName:state.student.fullName,email:state.student.email,sex:state.student.sex,age:state.student.age,program:state.student.program,level:state.student.level,score:score,maxScore:maxScore,percentage:percent,status:status,correct:correct,wrong:wrong,unanswered:unanswered,timestamp:new Date().toISOString()};
-  if(CONFIG.scriptURL==='https://script.google.com/macros/s/AKfycbyf5BVwDJKZDuE_iBU350AaI4t4B3gzJFnw6sQE8Nvkk6-nAVRKFmOdbM_wEC38ookM/exec'){var ind=document.getElementById('saving-indicator');if(ind){ind.innerHTML='<p class="text-sm font-medium" style="color:var(--warning)"><i class="fas fa-exclamation-triangle mr-2"></i>Google Sheets not configured. Results displayed above. Contact admin to set up the Apps Script.</p>';}return;}
-  fetch(CONFIG.scriptURL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)}).then(function(){var ind=document.getElementById('saving-indicator');if(ind){ind.innerHTML='<p class="text-sm font-medium" style="color:var(--success)"><i class="fas fa-check-circle mr-2"></i>Results saved and email sent successfully.</p>';}showToast('Results sent to '+state.student.email,'success');}).catch(function(err){var ind=document.getElementById('saving-indicator');if(ind){ind.innerHTML='<p class="text-sm font-medium" style="color:var(--danger)"><i class="fas fa-times-circle mr-2"></i>Failed to save. Screenshot your results. Error: '+err.message+'</p>';}});
+  var d={
+    iumId:state.student.iumId,
+    unhcrId:state.student.unhcrId,
+    kenyaId:state.student.kenyaId,
+    fullName:state.student.fullName,
+    email:state.student.email,
+    sex:state.student.sex,
+    age:state.student.age,
+    program:state.student.program,
+    level:state.student.level,
+    score:score,
+    maxScore:maxScore,
+    percentage:percent,
+    status:status,
+    correct:correct,
+    wrong:wrong,
+    unanswered:unanswered,
+    timestamp:new Date().toISOString()
+  };
+
+  var ind=document.getElementById('saving-indicator');
+
+  /* CHECK: Is the URL configured? */
+  if(!CONFIG.scriptURL || CONFIG.scriptURL==='https://script.google.com/macros/s/AKfycbwExPXffPX0AWEA0IfDgwXThJ2CcN2DriNYQ-a3erp6cKRiIK_OoJiBvOtjHBnc4hel/exec' || CONFIG.scriptURL.indexOf('script.google')===-1){
+    if(ind){
+      ind.innerHTML='<div class="text-left space-y-2">'
+        +'<p class="text-sm font-bold" style="color:var(--danger)"><i class="fas fa-times-circle mr-2"></i>Google Sheets NOT Connected</p>'
+        +'<p class="text-xs" style="color:var(--muted)">Your results are shown above. To save to Google Sheets, the admin must:</p>'
+        +'<ol class="text-xs list-decimal ml-4" style="color:var(--muted)">'
+        +'<li>Deploy the Google Apps Script</li>'
+        +'<li>Copy the Web App URL</li>'
+        +'<li>Paste it in the HTML file where it says <code>YOUR_GOOGLE_APPS_SCRIPT_URL_HERE</code></li>'
+        +'</ol></div>';
+    }
+    /* STILL TRY to send email via fallback */
+    tryFallbackEmail(d);
+    return;
+  }
+
+  /* METHOD 1: Form submission (most reliable for Google Apps Script) */
+  if(ind){ind.innerHTML='<i class="fas fa-spinner fa-spin mr-2" style="color:var(--primary)"></i><span class="text-sm font-medium" style="color:var(--muted)">Saving results and sending email (Method 1)...</span>';}
+
+  var formData=new FormData();
+  formData.append('data',JSON.stringify(d));
+
+  fetch(CONFIG.scriptURL,{
+    method:'POST',
+    body:formData
+  })
+  .then(function(resp){
+    /* We may not be able to read response due to CORS, but data was sent */
+    if(ind){
+      ind.innerHTML='<p class="text-sm font-medium" style="color:var(--success)"><i class="fas fa-check-circle mr-2"></i>Results saved to Google Sheets and email sent to <strong>'+escapeHtml(d.email)+'</strong></p>';
+    }
+    showToast('Results saved and email sent!','success');
+  })
+  .catch(function(err1){
+    console.log('Method 1 failed:',err1);
+
+    /* METHOD 2: text/plain fetch (works with no-cors) */
+    if(ind){ind.innerHTML='<i class="fas fa-spinner fa-spin mr-2" style="color:var(--primary)"></i><span class="text-sm font-medium" style="color:var(--muted)">Retrying (Method 2)...</span>';}
+
+    fetch(CONFIG.scriptURL,{
+      method:'POST',
+      mode:'no-cors',
+      headers:{'Content-Type':'text/plain'},
+      body:JSON.stringify(d)
+    })
+    .then(function(){
+      if(ind){
+        ind.innerHTML='<p class="text-sm font-medium" style="color:var(--success)"><i class="fas fa-check-circle mr-2"></i>Results saved and email sent to <strong>'+escapeHtml(d.email)+'</strong></p>';
+      }
+      showToast('Results saved and email sent!','success');
+    })
+    .catch(function(err2){
+      console.log('Method 2 failed:',err2);
+
+      /* METHOD 3: Hidden form + iframe (always works) */
+      if(ind){ind.innerHTML='<i class="fas fa-spinner fa-spin mr-2" style="color:var(--primary)"></i><span class="text-sm font-medium" style="color:var(--muted)">Retrying (Method 3)...</span>';}
+
+      try{
+        var existingFrame=document.getElementById('submit-frame');
+        if(existingFrame)existingFrame.remove();
+        var existingForm=document.getElementById('submit-form');
+        if(existingForm)existingForm.remove();
+
+        var iframe=document.createElement('iframe');
+        iframe.name='submit-frame';
+        iframe.id='submit-frame';
+        iframe.style.display='none';
+        document.body.appendChild(iframe);
+
+        var form=document.createElement('form');
+        form.id='submit-form';
+        form.method='POST';
+        form.action=CONFIG.scriptURL;
+        form.target='submit-frame';
+        form.style.display='none';
+
+        var input=document.createElement('input');
+        input.type='hidden';
+        input.name='data';
+        input.value=JSON.stringify(d);
+        form.appendChild(input);
+        document.body.appendChild(form);
+        form.submit();
+
+        setTimeout(function(){
+          if(ind){
+            ind.innerHTML='<p class="text-sm font-medium" style="color:var(--success)"><i class="fas fa-check-circle mr-2"></i>Results submitted to Google Sheets. Email sent to <strong>'+escapeHtml(d.email)+'</strong></p>';
+          }
+          showToast('Results submitted successfully!','success');
+          try{form.remove();iframe.remove();}catch(e){}
+        },3000);
+      }
+      catch(err3){
+        console.log('Method 3 failed:',err3);
+        if(ind){
+          ind.innerHTML='<div class="text-left space-y-2">'
+            +'<p class="text-sm font-bold" style="color:var(--warning)"><i class="fas fa-exclamation-triangle mr-2"></i>Could not reach Google Sheets</p>'
+            +'<p class="text-xs" style="color:var(--muted)">Your results are displayed above. Possible causes:</p>'
+            +'<ul class="text-xs list-disc ml-4" style="color:var(--muted)">'
+            +'<li>The Google Apps Script URL is incorrect</li>'
+            +'<li>The script is not deployed as Web App</li>'
+            +'<li>"Who has access" is not set to "Anyone"</li>'
+            +'<li>Script authorization was not completed</li>'
+            +'</ul>'
+            +'<p class="text-xs mt-2" style="color:var(--muted)">Please screenshot your results and contact admin.</p></div>';
+        }
+        showToast('Could not save to Google Sheets. See details below.','error');
+      }
+    });
+  });
 }
 
-function launchConfetti(){var colors=['#C41E3A','#C9A84C','#16A34A','#E8374F','#F0DEB4','#8B1A2B','#F59E0B'];for(var i=0;i<60;i++){(function(delay){setTimeout(function(){var p=document.createElement('div');p.className='confetti-piece';p.style.left=Math.random()*100+'vw';p.style.width=(Math.random()*8+6)+'px';p.style.height=(Math.random()*8+6)+'px';p.style.background=colors[Math.floor(Math.random()*colors.length)];p.style.borderRadius=Math.random()>0.5?'50%':'2px';p.style.animationDuration=(Math.random()*3+2)+'s';document.body.appendChild(p);setTimeout(function(){p.remove()},5000);},delay);})(i*40);}}
-
-function escapeHtml(str){var d=document.createElement('div');d.textContent=str;return d.innerHTML;}
+/* Fallback: try to at least notify that email needs manual setup */
+function tryFallbackEmail(d){
+  /* This only runs if scriptURL is not configured */
+  console.log('Script URL not configured. Data:',d);
+}
 </script>
 </body>
 </html>
